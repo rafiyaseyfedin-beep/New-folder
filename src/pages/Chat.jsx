@@ -32,8 +32,23 @@ export default function Chat() {
     { id: 'u_elaaf', name: 'Elaaf', email: 'elaaf@deboengineering.com', role: 'Project Manager', avatar: 'EL', team: 'Corporate' }
   ];
 
-  // Merge context users with default contacts to ensure rich options
-  const availableUsers = users && users.length >= 2 ? users : defaultContacts;
+  // Combine context users with default contacts to ensure Sead Nejib and Rihana Awel are always present
+  const mergedUsersMap = new Map();
+  defaultContacts.forEach(u => mergedUsersMap.set(u.email.toLowerCase(), u));
+  if (users && users.length > 0) {
+    users.forEach(u => {
+      const key = (u.email || u.name).toLowerCase();
+      mergedUsersMap.set(key, {
+        id: u.id || key,
+        name: u.name,
+        email: u.email || '',
+        role: u.role === 'ADMIN' ? 'Super Admin' : (u.role === 'PROJECT_MANAGER' ? 'Project Manager' : 'Team Member'),
+        avatar: u.avatar || u.name.slice(0, 2).toUpperCase(),
+        team: u.team || 'Engineering'
+      });
+    });
+  }
+  const availableUsers = Array.from(mergedUsersMap.values());
 
   // Active Sender (Who is currently typing and sending messages)
   const [currentSender, setCurrentSender] = useState(() => {
@@ -155,8 +170,15 @@ export default function Chat() {
                 id: 'm2',
                 senderName: 'Sead Nejib',
                 avatar: 'SN',
-                text: 'Hi Refiya! Working on the frontend dashboard tasks right now. You can share design files and project images here!',
+                text: 'Hi Refiya! Working on the frontend web application tasks right now. You can share design files and project images here!',
                 time: '10:02 AM'
+              },
+              {
+                id: 'm3',
+                senderName: 'Rihana Awel',
+                avatar: 'RA',
+                text: 'Hello everyone! Backend APIs and database schemas are fully synced and ready for production.',
+                time: '10:05 AM'
               }
             ]);
           } else {
@@ -274,10 +296,9 @@ export default function Chat() {
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: '270px minmax(0, 1fr)',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
       gap: '1.25rem',
-      height: 'calc(100vh - 110px)',
-      minHeight: '520px',
+      minHeight: 'calc(100vh - 120px)',
       fontFamily: 'system-ui, -apple-system, sans-serif'
     }}>
       

@@ -548,7 +548,7 @@ export default function Projects() {
           </button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '1.25rem' }}>
           {filteredProjects.map(proj => {
             const projTasks = tasks ? tasks.filter(t => t.projectId === proj.id) : [];
             const completedTaskCount = projTasks.filter(t => t.status === 'Completed').length;

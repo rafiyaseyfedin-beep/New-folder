@@ -6,16 +6,36 @@ import Footer from '../components/Footer';
 
 export default function DashboardLayout() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const toggleCollapse = () => {
     setIsCollapsed(prev => !prev);
   };
 
+  const toggleMobileSidebar = () => {
+    setIsMobileSidebarOpen(prev => !prev);
+  };
+
+  const closeMobileSidebar = () => {
+    setIsMobileSidebarOpen(false);
+  };
+
   return (
     <div className="dashboard-container">
-      <Sidebar isCollapsed={isCollapsed} toggleCollapse={toggleCollapse} />
+      {/* Translucent Backdrop Overlay for Mobile Drawer */}
+      <div
+        className={`sidebar-backdrop ${isMobileSidebarOpen ? 'active' : ''}`}
+        onClick={closeMobileSidebar}
+      />
+
+      <Sidebar
+        isCollapsed={isCollapsed}
+        toggleCollapse={toggleCollapse}
+        isMobileOpen={isMobileSidebarOpen}
+        closeMobile={closeMobileSidebar}
+      />
       <div className="main-wrapper" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <Header />
+        <Header toggleMobileSidebar={toggleMobileSidebar} />
         <main className="content-area" style={{ flex: 1 }}>
           <Outlet />
         </main>
@@ -24,3 +44,4 @@ export default function DashboardLayout() {
     </div>
   );
 }
+

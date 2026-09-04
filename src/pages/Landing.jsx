@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 import {
   Layers,
   ArrowRight,
@@ -46,9 +47,11 @@ import mobileImg from '../assets/new_mobile_dev_illustration_1787217672304.jpg';
 import uiuxImg from '../assets/new_uiux_illustration_1787217751182.jpg';
 import taskMgmtImg from '../assets/task_management_illustration_1787210153119.jpg';
 import analyticsImg from '../assets/analytics_reports_illustration_1787210688515.jpg';
+import { useApp } from '../context/AppContext';
 import collabImg from '../assets/team_collaboration_illustration_1787211013523.jpg';
 
 export default function Landing() {
+  const { isAuthenticated } = useApp();
   const [activeTab, setActiveTab] = useState('ADMIN');
 
   const roles = [
@@ -107,7 +110,7 @@ export default function Landing() {
     },
     {
       name: 'Frontend Web Development Team',
-      desc: 'React 18, Vite, JavaScript, HTML5/CSS3, and compact Day Mode dashboard UI.',
+      desc: 'React 18, Vite, JavaScript, HTML5/CSS3, and compact Day Mode workspace UI.',
       image: frontendImg,
       icon: <Layers size={22} color="var(--blue-primary)" />,
       tag: 'React 18, Vite & JS',
@@ -124,62 +127,14 @@ export default function Landing() {
   ];
 
   return (
-    <div style={{ background: '#ffffff', minHeight: '100vh', color: 'var(--text-body)', overflowX: 'hidden' }}>
-
-      {/* Debo Engineering Official Public Header */}
-      <header style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid var(--border-light)',
-        boxShadow: '0 2px 10px rgba(15, 23, 42, 0.02)'
-      }}>
-        <div style={{ maxWidth: '1220px', margin: '0 auto', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '76px' }}>
-
-          {/* Official Debo Engineering Logo & Tagline */}
-          <Link to="/landing" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '10px',
-              background: 'var(--blue-primary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#ffffff',
-              boxShadow: '0 4px 12px rgba(2, 132, 199, 0.25)'
-            }}>
-              <Layers size={22} />
-            </div>
-            <div>
-              <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-black)', letterSpacing: '-0.03em', display: 'block', lineHeight: 1.1 }}>
-                Debo <span style={{ color: 'var(--blue-primary)' }}>engineering</span>
-              </span>
-              <span style={{ fontSize: '0.625rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                IN PURSUIT OF SERVICE
-              </span>
-            </div>
-          </Link>
-
-          {/* Navigation Links */}
-          <nav style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-            <a href="#features" style={{ color: 'var(--text-body)', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>Features</a>
-            <a href="#teams" style={{ color: 'var(--text-body)', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>Teams & Tech</a>
-            <a href="#about" style={{ color: 'var(--text-body)', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>About</a>
-            <a href="#contact" style={{ color: 'var(--text-body)', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>Contact</a>
-            <Link to="/login" style={{ color: 'var(--text-black)', textDecoration: 'none', fontWeight: 700, fontSize: '0.9rem' }}>Sign In</Link>
-            <Link to="/dashboard" className="btn btn-blue" style={{ fontSize: '0.825rem', padding: '0.5rem 1.15rem' }}>
-              Launch Portal <ArrowRight size={15} />
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <div style={{ background: '#ffffff', minHeight: '100vh', fontFamily: "'Plus Jakarta Sans', sans-serif", width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
+      
+      {/* Top Header Navbar */}
+      <Navbar />
 
       {/* Hero Section */}
       <section style={{
-        padding: '4.5rem 1.5rem 3.5rem',
+        padding: '3.5rem 1rem 2.5rem',
         background: 'radial-gradient(circle at 50% 0%, #e0f2fe 0%, #ffffff 70%)',
         position: 'relative'
       }}>
@@ -197,16 +152,18 @@ export default function Landing() {
             fontSize: '0.8rem',
             fontWeight: 800,
             marginBottom: '1.5rem',
-            boxShadow: '0 4px 14px rgba(2, 132, 199, 0.1)'
+            boxShadow: '0 4px 14px rgba(2, 132, 199, 0.1)',
+            maxWidth: '100%',
+            boxSizing: 'border-box'
           }}>
             <Sparkles size={16} color="var(--blue-primary)" />
-            <span>Debo Engineering Enterprise Task Platform</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Debo Engineering Enterprise Task Platform</span>
           </div>
 
           <h1 style={{
-            fontSize: '3.5rem',
+            fontSize: 'clamp(1.8rem, 5vw, 3.5rem)',
             fontWeight: 800,
-            lineHeight: 1.12,
+            lineHeight: 1.15,
             letterSpacing: '-0.04em',
             color: 'var(--text-black)',
             maxWidth: '920px',
@@ -224,15 +181,6 @@ export default function Landing() {
           }}>
             A unified, role-based project management system supporting real-time percentage progress sliders, cross-functional teams, and executive analytics.
           </p>
-
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '3rem', flexWrap: 'wrap' }}>
-            <Link to="/dashboard" className="btn btn-blue" style={{ padding: '0.85rem 2rem', fontSize: '0.95rem', boxShadow: '0 4px 16px rgba(2, 132, 199, 0.3)' }}>
-              Launch App Portal <ArrowRight size={18} />
-            </Link>
-            <Link to="/login" className="btn btn-outline" style={{ padding: '0.85rem 2rem', fontSize: '0.95rem', background: '#ffffff' }}>
-              Sign In with Role <Lock size={16} />
-            </Link>
-          </div>
         </div>
       </section>
 

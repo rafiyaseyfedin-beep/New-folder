@@ -317,7 +317,8 @@ export default function Settings() {
         padding: '0.4rem 0.5rem',
         background: '#ffffff',
         border: '1px solid var(--border-light)',
-        borderRadius: 'var(--radius-md)'
+        borderRadius: 'var(--radius-md)',
+        flexWrap: 'wrap'
       }}>
         {[
           { key: 'PROFILE', label: 'Personal Information', icon: <User size={15} /> },

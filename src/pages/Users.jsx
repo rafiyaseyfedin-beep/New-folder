@@ -656,7 +656,7 @@ export default function Users() {
           </button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '1.25rem' }}>
           {displayedUsers.map(u => {
             const userTasks = (tasks || []).filter(t => t.assigneeId === u.id || t.assigneeName === u.name);
             const total = userTasks.length;

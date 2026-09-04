@@ -16,10 +16,11 @@ import {
   Check,
   Users,
   Clock,
-  Calendar
+  Calendar,
+  Menu
 } from 'lucide-react';
 
-export default function Header() {
+export default function Header({ toggleMobileSidebar }) {
   const { currentUser, currentRole, setCurrentRole } = useApp();
   const location = useLocation();
   const navigate = useNavigate();
@@ -115,21 +116,44 @@ export default function Header() {
       top: 0,
       zIndex: 40
     }}>
-      {/* Dynamic Title & Greeting based on Navigation Page */}
-      <div>
-        <h1 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-black)', marginBottom: '0.1rem' }}>
-          {currentTitle}
-        </h1>
-        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
-          Hey welcome back, <strong style={{ color: 'var(--text-black)' }}>{userName}</strong> 🙏
-        </p>
+      {/* Dynamic Title & Mobile Toggle */}
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <button
+          type="button"
+          className="mobile-sidebar-toggle-btn"
+          onClick={toggleMobileSidebar}
+          aria-label="Open Sidebar"
+          style={{
+            display: 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#f8fafc',
+            border: '1px solid #e2e8f0',
+            borderRadius: '8px',
+            padding: '0.4rem',
+            cursor: 'pointer',
+            marginRight: '0.65rem',
+            color: '#0f172a'
+          }}
+        >
+          <Menu size={20} />
+        </button>
+
+        <div>
+          <h1 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-black)', marginBottom: '0.1rem' }}>
+            {currentTitle}
+          </h1>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }} className="header-greeting-text">
+            Hey welcome back, <strong style={{ color: 'var(--text-black)' }}>{userName}</strong> 🙏
+          </p>
+        </div>
       </div>
 
       {/* Clean Header Controls: Date/Time, Search & User Avatar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
         
-        {/* Live Date & Time Display (e.g. 12:39 PM | Tuesday, Sep 1) */}
-        <div style={{
+        {/* Live Date & Time Display */}
+        <div className="header-clock-widget" style={{
           display: 'flex',
           alignItems: 'center',
           gap: '0.65rem',
@@ -163,10 +187,11 @@ export default function Header() {
         </div>
 
         {/* Global Search Box */}
-        <div className="search-input-box" style={{ width: '200px' }}>
+        <div className="search-input-box header-search-box" style={{ width: '200px' }}>
           <input type="text" placeholder="Search workspace..." />
           <Search size={14} color="var(--text-muted)" />
         </div>
+
 
         {/* Notifications Icon Button */}
         <Link to="/notifications" className="icon-btn" style={{ position: 'relative', textDecoration: 'none' }}>
@@ -284,89 +309,91 @@ export default function Header() {
                 </span>
               </div>
 
-              {/* Role Switcher Section */}
-              <div style={{ padding: '0.6rem 0.75rem', borderBottom: '1px solid #f1f5f9' }}>
-                <div style={{ fontSize: '0.675rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem', paddingLeft: '0.25rem' }}>
-                  Switch Workspace Role
+              {/* Role Switcher Section (Only accessible for ADMIN preview) */}
+              {currentRole === 'ADMIN' && (
+                <div style={{ padding: '0.6rem 0.75rem', borderBottom: '1px solid #f1f5f9' }}>
+                  <div style={{ fontSize: '0.675rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem', paddingLeft: '0.25rem' }}>
+                    Admin Preview Role Switcher
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleRoleSelect('ADMIN')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                        padding: '0.45rem 0.65rem',
+                        borderRadius: '6px',
+                        border: currentRole === 'ADMIN' ? '1px solid #bae6fd' : '1px solid transparent',
+                        background: currentRole === 'ADMIN' ? '#f0f9ff' : 'transparent',
+                        color: currentRole === 'ADMIN' ? '#0284c7' : '#334155',
+                        fontSize: '0.8rem',
+                        fontWeight: currentRole === 'ADMIN' ? 700 : 500,
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                        <Shield size={14} color="#0284c7" /> Super Admin
+                      </span>
+                      {currentRole === 'ADMIN' && <Check size={14} color="#0284c7" />}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRoleSelect('PROJECT_MANAGER')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                        padding: '0.45rem 0.65rem',
+                        borderRadius: '6px',
+                        border: currentRole === 'PROJECT_MANAGER' ? '1px solid #bfdbfe' : '1px solid transparent',
+                        background: currentRole === 'PROJECT_MANAGER' ? '#eff6ff' : 'transparent',
+                        color: currentRole === 'PROJECT_MANAGER' ? '#2563eb' : '#334155',
+                        fontSize: '0.8rem',
+                        fontWeight: currentRole === 'PROJECT_MANAGER' ? 700 : 500,
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                        <Briefcase size={14} color="#2563eb" /> Project Manager
+                      </span>
+                      {currentRole === 'PROJECT_MANAGER' && <Check size={14} color="#2563eb" />}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRoleSelect('TEAM_MEMBER')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                        padding: '0.45rem 0.65rem',
+                        borderRadius: '6px',
+                        border: currentRole === 'TEAM_MEMBER' ? '1px solid #bbf7d0' : '1px solid transparent',
+                        background: currentRole === 'TEAM_MEMBER' ? '#f0fdf4' : 'transparent',
+                        color: currentRole === 'TEAM_MEMBER' ? '#16a34a' : '#334155',
+                        fontSize: '0.8rem',
+                        fontWeight: currentRole === 'TEAM_MEMBER' ? 700 : 500,
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                        <Laptop size={14} color="#16a34a" /> Team Member
+                      </span>
+                      {currentRole === 'TEAM_MEMBER' && <Check size={14} color="#16a34a" />}
+                    </button>
+                  </div>
                 </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <button
-                    type="button"
-                    onClick={() => handleRoleSelect('ADMIN')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      width: '100%',
-                      padding: '0.45rem 0.65rem',
-                      borderRadius: '6px',
-                      border: currentRole === 'ADMIN' ? '1px solid #bae6fd' : '1px solid transparent',
-                      background: currentRole === 'ADMIN' ? '#f0f9ff' : 'transparent',
-                      color: currentRole === 'ADMIN' ? '#0284c7' : '#334155',
-                      fontSize: '0.8rem',
-                      fontWeight: currentRole === 'ADMIN' ? 700 : 500,
-                      cursor: 'pointer',
-                      textAlign: 'left'
-                    }}
-                  >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                      <Shield size={14} color="#0284c7" /> Super Admin
-                    </span>
-                    {currentRole === 'ADMIN' && <Check size={14} color="#0284c7" />}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleRoleSelect('PROJECT_MANAGER')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      width: '100%',
-                      padding: '0.45rem 0.65rem',
-                      borderRadius: '6px',
-                      border: currentRole === 'PROJECT_MANAGER' ? '1px solid #bfdbfe' : '1px solid transparent',
-                      background: currentRole === 'PROJECT_MANAGER' ? '#eff6ff' : 'transparent',
-                      color: currentRole === 'PROJECT_MANAGER' ? '#2563eb' : '#334155',
-                      fontSize: '0.8rem',
-                      fontWeight: currentRole === 'PROJECT_MANAGER' ? 700 : 500,
-                      cursor: 'pointer',
-                      textAlign: 'left'
-                    }}
-                  >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                      <Briefcase size={14} color="#2563eb" /> Project Manager
-                    </span>
-                    {currentRole === 'PROJECT_MANAGER' && <Check size={14} color="#2563eb" />}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleRoleSelect('TEAM_MEMBER')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      width: '100%',
-                      padding: '0.45rem 0.65rem',
-                      borderRadius: '6px',
-                      border: currentRole === 'TEAM_MEMBER' ? '1px solid #bbf7d0' : '1px solid transparent',
-                      background: currentRole === 'TEAM_MEMBER' ? '#f0fdf4' : 'transparent',
-                      color: currentRole === 'TEAM_MEMBER' ? '#16a34a' : '#334155',
-                      fontSize: '0.8rem',
-                      fontWeight: currentRole === 'TEAM_MEMBER' ? 700 : 500,
-                      cursor: 'pointer',
-                      textAlign: 'left'
-                    }}
-                  >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                      <Laptop size={14} color="#16a34a" /> Team Member
-                    </span>
-                    {currentRole === 'TEAM_MEMBER' && <Check size={14} color="#16a34a" />}
-                  </button>
-                </div>
-              </div>
+              )}
 
               {/* Navigation Links */}
               <div style={{ padding: '0.45rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
@@ -389,24 +416,26 @@ export default function Header() {
                   <User size={14} color="#64748b" /> User Profile
                 </Link>
 
-                <Link
-                  to="/users"
-                  onClick={() => setDropdownOpen(false)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    padding: '0.45rem 0.65rem',
-                    borderRadius: '6px',
-                    color: '#334155',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    textDecoration: 'none'
-                  }}
-                  className="dropdown-item"
-                >
-                  <Users size={14} color="#64748b" /> User Directory
-                </Link>
+                {currentRole === 'ADMIN' && (
+                  <Link
+                    to="/users"
+                    onClick={() => setDropdownOpen(false)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      padding: '0.45rem 0.65rem',
+                      borderRadius: '6px',
+                      color: '#334155',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      textDecoration: 'none'
+                    }}
+                    className="dropdown-item"
+                  >
+                    <Users size={14} color="#64748b" /> User Directory
+                  </Link>
+                )}
 
                 <Link
                   to="/settings"

@@ -15,10 +15,11 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
-  User
+  User,
+  X
 } from 'lucide-react';
 
-export default function Sidebar({ isCollapsed, toggleCollapse }) {
+export default function Sidebar({ isCollapsed, toggleCollapse, isMobileOpen, closeMobile }) {
   const { currentUser, currentRole } = useApp();
 
   // Full Navigation List with All 9 Platform Pages
@@ -27,7 +28,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse }) {
     { name: 'Projects', path: '/projects', icon: <Briefcase size={18} strokeWidth={2} /> },
     { name: 'Teams', path: '/teams', icon: <UsersIcon size={18} strokeWidth={2} /> },
     { name: 'Tasks', path: '/tasks', icon: <CheckSquare size={18} strokeWidth={2} /> },
-    { name: 'Users', path: '/users', icon: <UserCheck size={18} strokeWidth={2} /> },
+    { name: 'Users', path: '/users', icon: <UserCheck size={18} strokeWidth={2} />, roles: ['ADMIN'] },
     { name: 'Reports', path: '/reports', icon: <BarChart3 size={18} strokeWidth={2} /> },
     { name: 'Team Chat', path: '/chat', icon: <MessageSquare size={18} strokeWidth={2} /> },
     { name: 'Profile', path: '/profile', icon: <User size={18} strokeWidth={2} /> },
@@ -36,8 +37,10 @@ export default function Sidebar({ isCollapsed, toggleCollapse }) {
     { name: 'Logout', path: '/logout', icon: <LogOut size={18} strokeWidth={2} /> },
   ];
 
+  const visibleNavItems = navItems.filter(item => !item.roles || item.roles.includes(currentRole));
+
   return (
-    <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`} style={{
+    <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${isMobileOpen ? 'mobile-open' : ''}`} style={{
       background: '#ffffff',
       borderRight: '1px solid var(--border-light)',
       display: 'flex',
@@ -46,6 +49,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse }) {
       maxHeight: '100vh',
       position: 'sticky',
       top: 0,
+      zIndex: 50,
       padding: '0.85rem 0.75rem',
       overflow: 'hidden'
     }}>
@@ -64,7 +68,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse }) {
           background: '#f8fafc',
           marginBottom: '0.85rem'
         }}>
-          <NavLink to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', textDecoration: 'none' }}>
+          <NavLink to="/" onClick={closeMobile} style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', textDecoration: 'none' }}>
             <div style={{
               width: '32px',
               height: '32px',
@@ -91,28 +95,51 @@ export default function Sidebar({ isCollapsed, toggleCollapse }) {
             )}
           </NavLink>
 
-          <button
-            onClick={toggleCollapse}
-            title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              cursor: 'pointer',
-              padding: '0.2rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#475569'
-            }}
-          >
-            {isCollapsed ? <ChevronRight size={18} strokeWidth={2} /> : <ChevronLeft size={18} strokeWidth={2} />}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <button
+              onClick={toggleCollapse}
+              className="desktop-sidebar-toggle"
+              title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer',
+                padding: '0.2rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#475569'
+              }}
+            >
+              {isCollapsed ? <ChevronRight size={18} strokeWidth={2} /> : <ChevronLeft size={18} strokeWidth={2} />}
+            </button>
+
+            {/* Mobile Close Button */}
+            <button
+              onClick={closeMobile}
+              className="mobile-sidebar-close-btn"
+              title="Close Sidebar"
+              style={{
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer',
+                padding: '0.2rem',
+                display: 'none',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#dc2626'
+              }}
+            >
+              <X size={20} strokeWidth={2} />
+            </button>
+          </div>
         </div>
 
         {/* User Profile Card at Top */}
         {!isCollapsed && (
           <NavLink
             to="/profile"
+            onClick={closeMobile}
             style={{
               display: 'flex',
               flexDirection: 'column',
@@ -179,7 +206,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse }) {
         </div>
       )}
 
-      {/* SCROLLABLE MENU NAVIGATION AREA (ALL 9 PAGES VISIBLE) */}
+      {/* SCROLLABLE MENU NAVIGATION AREA */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
@@ -189,10 +216,11 @@ export default function Sidebar({ isCollapsed, toggleCollapse }) {
         scrollbarColor: 'var(--border-light) transparent'
       }}>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
+              onClick={closeMobile}
               title={isCollapsed ? item.name : undefined}
               style={({ isActive }) => {
                 const isLogout = item.path === '/logout';
@@ -234,7 +262,18 @@ export default function Sidebar({ isCollapsed, toggleCollapse }) {
         </nav>
       </div>
 
+      <style>{`
+        @media (max-width: 768px) {
+          .desktop-sidebar-toggle {
+            display: none !important;
+          }
+          .mobile-sidebar-close-btn {
+            display: flex !important;
+          }
+        }
+      `}</style>
 
     </aside>
   );
 }
+

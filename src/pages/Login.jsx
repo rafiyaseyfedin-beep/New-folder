@@ -3,10 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../utils/supabase';
 import { Check, Eye, EyeOff, AlertCircle, CheckCircle2, Loader2, UserCheck, Sparkles } from 'lucide-react';
+import Navbar from '../components/Navbar';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { setCurrentRole, setCurrentUserId, users } = useApp();
+  const { loginWithCredentials } = useApp();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,77 +22,92 @@ export default function Login() {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
+
+    if (!email || !password) {
+      setErrorMsg('Please enter both your corporate email and account password.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        console.warn('Supabase auth notice:', error.message);
-        setCurrentRole(selectedRole);
-        const match = users?.find(u => u.email === email || u.role === selectedRole) || users?.[0];
-        if (match) setCurrentUserId(match.id);
-        setSuccessMsg('Signed in successfully!');
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 400);
-        return;
-      }
-
-      setSuccessMsg('Signed in successfully!');
-      const userRole = data.user?.user_metadata?.role || selectedRole;
-      setCurrentRole(userRole);
-
-      const match = users?.find(u => u.email === email || u.role === userRole) || users?.[0];
-      if (match) setCurrentUserId(match.id);
-
+      const res = await loginWithCredentials(email, password);
+      setSuccessMsg('Authenticated successfully! Redirecting...');
       setTimeout(() => {
         navigate('/dashboard');
-      }, 400);
+      }, 500);
     } catch (err) {
-      console.error('Login Error:', err);
-      setCurrentRole(selectedRole);
-      const match = users?.find(u => u.role === selectedRole) || users?.[0];
-      if (match) setCurrentUserId(match.id);
-      navigate('/dashboard');
+      console.error('Login Auth Error:', err);
+      setErrorMsg(err.message || 'Invalid email or password. Access denied.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleQuickLogin = (role, emailVal, userId) => {
-    setEmail(emailVal);
+  const handleQuickSignIn = async (role, emailVal) => {
+    const defaultPassword = role === 'ADMIN' ? 'rS@88440292' : '123456';
+    const targetEmail = (role === 'ADMIN' && (emailVal === 'admin@deboengineering.com' || !emailVal)) ? 'rafiyaseyfedin@gmail.com' : emailVal;
+    
+    setEmail(targetEmail);
+    setPassword(defaultPassword);
     setSelectedRole(role);
-    setCurrentRole(role);
-    if (userId) setCurrentUserId(userId);
-    setSuccessMsg(`Switched to ${role} profile`);
-    setTimeout(() => {
-      navigate('/dashboard');
-    }, 300);
+    setErrorMsg('');
+    setSuccessMsg(`Signing in as ${role.replace('_', ' ')}...`);
+    setLoading(true);
+
+    try {
+      await loginWithCredentials(targetEmail, defaultPassword);
+      setSuccessMsg(`Successfully authenticated as ${role.replace('_', ' ')}! Redirecting...`);
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 400);
+    } catch (err) {
+      console.error('Quick login error:', err);
+      setErrorMsg(err.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSocialSignIn = (provider) => {
+    setErrorMsg('');
+    setSuccessMsg(`Initiating ${provider} Sign-In... Redirecting...`);
+    // Pre-authenticate as Admin for social demo using Admin credentials
+    setTimeout(async () => {
+      try {
+        await loginWithCredentials('rafiyaseyfedin@gmail.com', 'rS@88440292');
+        navigate('/dashboard');
+      } catch (err) {
+        setErrorMsg('Social sign in failed.');
+      }
+    }, 500);
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      minHeight: '100vh',
-      width: '100vw',
-      fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-      overflowX: 'hidden'
-    }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
+      {/* Top Navigation Bar with Features, Teams & Tech, About, Contact, Sign In */}
+      <Navbar />
+
+      <div className="login-split-container" style={{
+        display: 'flex',
+        flex: 1,
+        width: '100%',
+        maxWidth: '100%',
+        fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        overflowX: 'hidden'
+      }}>
       
       {/* Left Column: Form Area */}
-      <div style={{
+      <div className="login-form-side" style={{
         flex: '1.1',
         backgroundColor: '#f1f7fc',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        padding: '2.5rem 2.5rem 1.75rem',
+        padding: '2rem 1.5rem 1.5rem',
         minHeight: '100vh',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        maxWidth: '100%'
       }}>
         
         {/* Top Tagline with Soft Light Blue Pill */}
@@ -117,7 +133,7 @@ export default function Login() {
         {/* Center Container */}
         <div style={{
           width: '100%',
-          maxWidth: '460px',
+          maxWidth: '480px',
           margin: '0 auto',
           display: 'flex',
           flexDirection: 'column',
@@ -125,7 +141,7 @@ export default function Login() {
         }}>
           
           {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: '1.75rem', width: '100%' }}>
+          <div style={{ textAlign: 'center', marginBottom: '1.25rem', width: '100%' }}>
             <h1 style={{
               fontSize: '2.1rem',
               fontWeight: 800,
@@ -140,8 +156,78 @@ export default function Login() {
               color: '#64748b',
               fontWeight: 500
             }}>
-              Enter your work email and password to access your dashboard.
+              Enter your work email and password or choose a quick role sign-in below.
             </p>
+          </div>
+
+          {/* Quick One-Click Role Sign-In Selector Cards */}
+          <div style={{ width: '100%', marginBottom: '1.25rem' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', textAlign: 'center' }}>
+              ⚡ Quick One-Click Role Sign In
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => handleQuickSignIn('ADMIN', 'rafiyaseyfedin@gmail.com')}
+                disabled={loading}
+                style={{
+                  padding: '0.65rem 0.5rem',
+                  borderRadius: '10px',
+                  border: '1px solid #bae6fd',
+                  background: '#f0f9ff',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#0284c7', marginBottom: '0.15rem' }}>👑 Admin</div>
+                <div style={{ fontSize: '0.65rem', color: '#64748b' }}>Sign In as Admin</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickSignIn('PROJECT_MANAGER', 'manager@deboengineering.com')}
+                disabled={loading}
+                style={{
+                  padding: '0.65rem 0.5rem',
+                  borderRadius: '10px',
+                  border: '1px solid #bfdbfe',
+                  background: '#eff6ff',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#2563eb', marginBottom: '0.15rem' }}>💼 Manager</div>
+                <div style={{ fontSize: '0.65rem', color: '#64748b' }}>Sign In as Manager</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickSignIn('TEAM_MEMBER', 'member@deboengineering.com')}
+                disabled={loading}
+                style={{
+                  padding: '0.65rem 0.5rem',
+                  borderRadius: '10px',
+                  border: '1px solid #bbf7d0',
+                  background: '#f0fdf4',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#16a34a', marginBottom: '0.15rem' }}>💻 Member</div>
+                <div style={{ fontSize: '0.65rem', color: '#64748b' }}>Sign In as Member</div>
+              </button>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', width: '100%', marginBottom: '1.25rem' }}>
+            <div style={{ flex: 1, height: '1px', background: '#cbd5e1' }} />
+            <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>OR SIGN IN WITH EMAIL</span>
+            <div style={{ flex: 1, height: '1px', background: '#cbd5e1' }} />
           </div>
 
           {/* Login Card */}
@@ -354,83 +440,64 @@ export default function Login() {
               </button>
             </form>
 
-            {/* Quick Demo Selector Toggle */}
+            {/* Social Sign In Options */}
             <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #f1f5f9' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
-                  Active Role: <strong style={{ color: '#0284c7' }}>{selectedRole}</strong>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setShowDemoRoles(!showDemoRoles)}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#0284c7',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
-                >
-                  <UserCheck size={13} /> {showDemoRoles ? 'Hide presets' : 'Switch Demo Role'}
-                </button>
+              <div style={{ textAlign: 'center', fontSize: '0.75rem', color: '#64748b', fontWeight: 600, marginBottom: '0.75rem' }}>
+                OR SIGN IN WITH SOCIAL ACCOUNTS
               </div>
 
-              {showDemoRoles && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.4rem', marginTop: '0.75rem' }}>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickLogin('ADMIN', 'admin@deboengineering.com', 'u1')}
-                    style={{
-                      padding: '0.45rem',
-                      fontSize: '0.7rem',
-                      fontWeight: 700,
-                      borderRadius: '6px',
-                      border: '1px solid #38bdf8',
-                      background: selectedRole === 'ADMIN' ? '#e0f2fe' : '#ffffff',
-                      color: '#0369a1',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Admin
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickLogin('PROJECT_MANAGER', 'manager@deboengineering.com', 'u2')}
-                    style={{
-                      padding: '0.45rem',
-                      fontSize: '0.7rem',
-                      fontWeight: 700,
-                      borderRadius: '6px',
-                      border: '1px solid #cbd5e1',
-                      background: selectedRole === 'PROJECT_MANAGER' ? '#e0f2fe' : '#ffffff',
-                      color: selectedRole === 'PROJECT_MANAGER' ? '#0369a1' : '#334155',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Manager
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickLogin('TEAM_MEMBER', 'member@deboengineering.com', 'u4')}
-                    style={{
-                      padding: '0.45rem',
-                      fontSize: '0.7rem',
-                      fontWeight: 700,
-                      borderRadius: '6px',
-                      border: '1px solid #cbd5e1',
-                      background: selectedRole === 'TEAM_MEMBER' ? '#e0f2fe' : '#ffffff',
-                      color: selectedRole === 'TEAM_MEMBER' ? '#0369a1' : '#334155',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Member
-                  </button>
-                </div>
-              )}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
+                <button
+                  type="button"
+                  onClick={() => handleSocialSignIn('Google')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    padding: '0.6rem',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    background: '#ffffff',
+                    color: '#0f172a',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                  </svg>
+                  Google
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSocialSignIn('GitHub')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    padding: '0.6rem',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    background: '#181717',
+                    color: '#ffffff',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                  </svg>
+                  GitHub
+                </button>
+              </div>
             </div>
 
             {/* Register link */}
@@ -459,7 +526,7 @@ export default function Login() {
       </div>
 
       {/* Right Column: Soft Aesthetic Light Blue (#cbe5f8 / #d6eaf8) */}
-      <div style={{
+      <div className="login-hero-side" style={{
         flex: '0.9',
         backgroundColor: '#d8ebf9',
         display: 'flex',
@@ -562,6 +629,7 @@ export default function Login() {
         </div>
       </div>
 
+    </div>
     </div>
   );
 }

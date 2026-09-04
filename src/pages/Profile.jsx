@@ -128,7 +128,7 @@ export default function Profile() {
       )}
 
       {/* 2. Two-Column Information Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.5rem' }}>
         
         {/* Left Side: Personal Information Form */}
         <form onSubmit={handleSaveProfile} className="dash-card" style={{ padding: '1.5rem', background: '#ffffff', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>

@@ -358,7 +358,7 @@ export default function Teams() {
       </div>
 
       {/* 4. Team Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: '1.25rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '1.25rem' }}>
         {filteredTeams.map(t => {
           const membersList = t.members && Array.isArray(t.members) && t.members.length > 0
             ? t.members.map(m => ({

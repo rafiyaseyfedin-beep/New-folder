@@ -31,6 +31,9 @@ html {
 
 html, body {
   height: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg-app);
   color: var(--text-body);
@@ -38,12 +41,20 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 /* App Shell Layout */
 .dashboard-container {
   display: flex;
   width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   background: var(--bg-app);
+  position: relative;
 }
 
 /* Sidebar Fixed / Sticky Scrollable Styling */
@@ -56,11 +67,12 @@ html, body {
   flex-direction: column;
   height: 100vh;
   max-height: 100vh;
-  position: sticky;
-  top: 0;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
   padding: 0.85rem 0.75rem;
-  transition: width 0.2s ease, min-width 0.2s ease;
-  z-index: 50;
+  transition: transform 0.25s ease, width 0.2s ease, min-width 0.2s ease;
+  z-index: 50 !important;
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
@@ -83,8 +95,25 @@ html, body {
 }
 
 .sidebar.collapsed {
-  width: 76px;
-  min-width: 76px;
+  width: 76px !important;
+  min-width: 76px !important;
+}
+
+/* Backdrop Overlay for Mobile Sidebar */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 45;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar-backdrop.active {
+  display: block;
+  opacity: 1;
 }
 
 /* Main Content Area */
@@ -93,13 +122,22 @@ html, body {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  max-width: 100%;
   min-height: 100vh;
+  margin-left: 250px;
+  transition: margin-left 0.2s ease;
+}
+
+.sidebar.collapsed + .main-wrapper {
+  margin-left: 76px;
 }
 
 .content-area {
   padding: 1.5rem;
   flex: 1;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Cards & Panels */
@@ -110,10 +148,32 @@ html, body {
   box-shadow: var(--shadow-card);
   padding: 1.25rem;
   transition: var(--transition);
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .dash-card:hover {
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+}
+
+/* Table Responsive Wrapper */
+.table-responsive {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+/* Responsive Images */
+img, svg {
+  max-width: 100%;
+  height: auto;
 }
 
 /* Buttons */
@@ -129,6 +189,7 @@ html, body {
   border: none;
   transition: var(--transition);
   text-decoration: none;
+  box-sizing: border-box;
 }
 
 .btn-blue {
@@ -163,6 +224,8 @@ html, body {
   border-radius: var(--radius-md);
   padding: 0.45rem 0.85rem;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .search-input-box input {
@@ -191,3 +254,82 @@ footer#contact span,
 footer#contact a {
   color: #0f172a !important;
 }
+
+/* Mobile & Tablet Media Queries */
+@media (max-width: 900px) {
+  .login-split-container {
+    flex-direction: column !important;
+  }
+  .login-hero-side {
+    display: none !important;
+  }
+  .login-form-side {
+    width: 100% !important;
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+    padding: 1.5rem 1rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    height: 100vh !important;
+    z-index: 100 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.25s ease-in-out !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25) !important;
+    width: 260px !important;
+    min-width: 260px !important;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0) !important;
+  }
+
+  .main-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .mobile-sidebar-toggle-btn {
+    display: flex !important;
+  }
+
+  .content-area {
+    padding: 1rem 0.75rem;
+  }
+
+  .top-header {
+    padding: 0.75rem 1rem !important;
+  }
+
+  .header-clock-widget {
+    display: none !important;
+  }
+  
+  .header-search-box {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-area {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .dash-card {
+    padding: 0.85rem;
+  }
+
+  .btn {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
+

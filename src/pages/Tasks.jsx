@@ -592,7 +592,7 @@ export default function Tasks() {
           </button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '1.25rem' }}>
           {filteredTasks.map(t => {
             const isCompleted = t.status === 'Completed' || t.progress === 100;
             const isInProgress = t.status === 'In Progress' && t.progress < 100;

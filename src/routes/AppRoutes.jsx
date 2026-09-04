@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
+import ProtectedRoute from '../components/ProtectedRoute';
 import Home from '../pages/Home';
 import Projects from '../pages/Projects';
 import Tasks from '../pages/Tasks';
@@ -29,18 +30,24 @@ export default function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/logout" element={<Logout />} />
 
-      {/* Main Dashboard Portal Routes */}
-      <Route element={<DashboardLayout />}>
-        <Route path="/dashboard" element={<Home />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/tasks" element={<Tasks />} />
-        <Route path="/teams" element={<Teams />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/users" element={<Users />} />
+      {/* Protected Dashboard Portal Routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<DashboardLayout />}>
+          <Route path="/dashboard" element={<Home />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/teams" element={<Teams />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
+
+          {/* Admin Only Route */}
+          <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+            <Route path="/users" element={<Users />} />
+          </Route>
+        </Route>
       </Route>
 
       {/* Top-Level 404 Catch All */}

@@ -291,7 +291,7 @@ export default function Home() {
         </div>
 
         {/* Task Cards Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 270px), 1fr))', gap: '1rem' }}>
           {tasks.map(task => {
             const isCompleted = task.status === 'Completed';
             const assigneeUser = users?.find(u => u.name === task.assigneeName || u.id === task.assigneeId);

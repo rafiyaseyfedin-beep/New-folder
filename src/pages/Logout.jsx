@@ -5,24 +5,15 @@ import { LogOut, Loader2, Layers } from 'lucide-react';
 
 export default function Logout() {
   const navigate = useNavigate();
-  const { setCurrentUserId, setCurrentRole } = useApp();
+  const { logout } = useApp();
   const [isConfirming, setIsConfirming] = useState(true);
 
-  const handleConfirmLogout = () => {
+  const handleConfirmLogout = async () => {
     setIsConfirming(false);
-
-    // 1. Clear session credentials
-    localStorage.removeItem('debo_role');
-    localStorage.removeItem('debo_user_id');
-    
-    // 2. Reset context states
-    setCurrentUserId('');
-    setCurrentRole('ADMIN');
-
-    // 3. Redirect to login page after a short delay
+    await logout();
     setTimeout(() => {
       navigate('/login');
-    }, 1500);
+    }, 1000);
   };
 
   const handleCancel = () => {
