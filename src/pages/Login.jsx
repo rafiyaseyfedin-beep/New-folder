@@ -156,78 +156,8 @@ export default function Login() {
               color: '#64748b',
               fontWeight: 500
             }}>
-              Enter your work email and password or choose a quick role sign-in below.
+              Enter your work email and password to access your workspace.
             </p>
-          </div>
-
-          {/* Quick One-Click Role Sign-In Selector Cards */}
-          <div style={{ width: '100%', marginBottom: '1.25rem' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', textAlign: 'center' }}>
-              ⚡ Quick One-Click Role Sign In
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
-              <button
-                type="button"
-                onClick={() => handleQuickSignIn('ADMIN', 'rafiyaseyfedin@gmail.com')}
-                disabled={loading}
-                style={{
-                  padding: '0.65rem 0.5rem',
-                  borderRadius: '10px',
-                  border: '1px solid #bae6fd',
-                  background: '#f0f9ff',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#0284c7', marginBottom: '0.15rem' }}>👑 Admin</div>
-                <div style={{ fontSize: '0.65rem', color: '#64748b' }}>Sign In as Admin</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickSignIn('PROJECT_MANAGER', 'manager@deboengineering.com')}
-                disabled={loading}
-                style={{
-                  padding: '0.65rem 0.5rem',
-                  borderRadius: '10px',
-                  border: '1px solid #bfdbfe',
-                  background: '#eff6ff',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#2563eb', marginBottom: '0.15rem' }}>💼 Manager</div>
-                <div style={{ fontSize: '0.65rem', color: '#64748b' }}>Sign In as Manager</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickSignIn('TEAM_MEMBER', 'member@deboengineering.com')}
-                disabled={loading}
-                style={{
-                  padding: '0.65rem 0.5rem',
-                  borderRadius: '10px',
-                  border: '1px solid #bbf7d0',
-                  background: '#f0fdf4',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#16a34a', marginBottom: '0.15rem' }}>💻 Member</div>
-                <div style={{ fontSize: '0.65rem', color: '#64748b' }}>Sign In as Member</div>
-              </button>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', width: '100%', marginBottom: '1.25rem' }}>
-            <div style={{ flex: 1, height: '1px', background: '#cbd5e1' }} />
-            <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>OR SIGN IN WITH EMAIL</span>
-            <div style={{ flex: 1, height: '1px', background: '#cbd5e1' }} />
           </div>
 
           {/* Login Card */}
