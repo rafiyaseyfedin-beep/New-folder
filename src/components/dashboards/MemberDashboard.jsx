@@ -25,35 +25,8 @@ export default function MemberDashboard() {
   const myCompletionRate = myTasks.length > 0 ? Math.round((completedMyTasks / myTasks.length) * 100) : 0;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%', paddingBottom: '2rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%', paddingBottom: '2rem' }}>
       
-      {/* TEAM MEMBER GREEN PERSONAL WORKSPACE BANNER */}
-      <div style={{
-        background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
-        borderRadius: '16px',
-        padding: '1.75rem 2rem',
-        color: '#ffffff',
-        boxShadow: '0 12px 30px rgba(16, 185, 129, 0.25)'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(255, 255, 255, 0.2)', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.725rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.75rem' }}>
-              💻 My Personal Task Workspace
-            </div>
-            <h1 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#ffffff', margin: 0, letterSpacing: '-0.03em' }}>
-              Welcome back, {myName}!
-            </h1>
-            <p style={{ fontSize: '0.85rem', opacity: 0.95, marginTop: '0.35rem', maxWidth: '650px' }}>
-              Your personal daily task board. Drag sliders to update your progress and check off completed work.
-            </p>
-          </div>
-
-          <Link to="/chat" className="btn" style={{ background: '#ffffff', color: '#059669', fontWeight: 800, fontSize: '0.85rem', padding: '0.65rem 1.25rem', borderRadius: '8px', textDecoration: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <MessageSquare size={16} /> Open Team Chat
-          </Link>
-        </div>
-      </div>
-
       {/* MEMBER STAT CARDS */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.1rem' }}>
         <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '1.25rem', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)' }}>
