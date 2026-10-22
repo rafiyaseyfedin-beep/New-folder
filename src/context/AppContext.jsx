@@ -576,21 +576,43 @@ export function AppProvider({ children }) {
   };
 
   const updateUser = async (userId, updatedData) => {
+    // 1. Update in users array
     setUsers(prev => prev.map(u => {
-      if (u.id === userId) {
+      if (u.id === userId || (currentUserId && u.id === currentUserId)) {
         return { ...u, ...updatedData };
       }
       return u;
     }));
 
+    // 2. Update authenticatedUser state and persist to localStorage so currentUser reflects updates instantly
+    setAuthenticatedUser(prev => {
+      const merged = prev ? { ...prev, ...updatedData } : { id: userId, ...updatedData };
+      try {
+        const savedAuth = localStorage.getItem('debo_auth');
+        const parsed = savedAuth ? JSON.parse(savedAuth) : {};
+        localStorage.setItem('debo_auth', JSON.stringify({
+          ...parsed,
+          isAuthenticated: true,
+          user: merged,
+          role: merged.role || currentRole || 'ADMIN'
+        }));
+      } catch (e) {
+        console.warn('Failed to update debo_auth in localStorage:', e);
+      }
+      return merged;
+    });
+
+    // 3. Update Supabase users table safely
     try {
-      await supabase.from('users').update({
-        name: updatedData.name,
-        email: updatedData.email,
-        role: updatedData.role,
-        team_name: updatedData.team || updatedData.team_name,
-        avatar: updatedData.avatar
-      }).eq('id', userId);
+      if (userId && userId !== 'u_active') {
+        await supabase.from('users').update({
+          name: updatedData.name,
+          email: updatedData.email,
+          role: updatedData.role,
+          team_name: updatedData.team || updatedData.team_name,
+          avatar: updatedData.avatar
+        }).eq('id', userId);
+      }
     } catch (e) {
       console.warn('Failed to update user in Supabase:', e);
     }

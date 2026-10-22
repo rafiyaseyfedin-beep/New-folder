@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { processAvatarFile } from '../utils/avatarHelper';
+import { supabase } from '../utils/supabase';
 import {
   LayoutDashboard,
   Briefcase,
@@ -16,11 +18,52 @@ import {
   ChevronRight,
   LogOut,
   User,
+  Camera,
+  Loader2,
   X
 } from 'lucide-react';
 
 export default function Sidebar({ isCollapsed, toggleCollapse, isMobileOpen, closeMobile }) {
-  const { currentUser, currentRole } = useApp();
+  const { currentUser, currentRole, updateUser } = useApp();
+  const fileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isHoveringAvatar, setIsHoveringAvatar] = useState(false);
+
+  const handleAvatarFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      // Compress and center-crop image to 256x256 square JPEG (~20KB)
+      const optimizedDataUrl = await processAvatarFile(file, 256, 0.85);
+      const activeId = currentUser?.id || 'u_active';
+
+      await updateUser(activeId, {
+        name: currentUser?.name || 'Refiya Seyifadin',
+        email: currentUser?.email || 'rafiyaseyfedin@gmail.com',
+        role: currentUser?.role || currentRole || 'ADMIN',
+        team: currentUser?.team || 'Management',
+        avatar: optimizedDataUrl
+      });
+
+      try {
+        await supabase.auth.updateUser({
+          data: { avatar: optimizedDataUrl }
+        });
+      } catch (authErr) {
+        console.warn('Supabase auth avatar update notice:', authErr);
+      }
+    } catch (err) {
+      console.error('Sidebar avatar upload failed:', err);
+      alert(err.message || 'Failed to upload photo. Please try another image.');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   // Full Navigation List with All 9 Platform Pages
   const navItems = [
@@ -137,64 +180,168 @@ export default function Sidebar({ isCollapsed, toggleCollapse, isMobileOpen, clo
 
         {/* User Profile Card at Top */}
         {!isCollapsed && (
-          <NavLink
-            to="/profile"
-            onClick={closeMobile}
+          <div
+            className="sidebar-user-card"
             style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               textAlign: 'center',
-              padding: '0.75rem 0.65rem',
+              padding: '0.85rem 0.65rem',
               borderRadius: 'var(--radius-md)',
               background: '#ffffff',
               border: '1px solid var(--border-light)',
               marginBottom: '0.85rem',
-              textDecoration: 'none',
-              boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)'
+              boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)',
+              position: 'relative'
             }}
           >
-            <div style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '50%',
-              background: 'var(--blue-primary)',
-              color: '#ffffff',
-              fontWeight: 800,
-              fontSize: '0.9rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: '0.35rem',
-              boxShadow: '0 4px 10px rgba(2, 132, 199, 0.2)',
-              overflow: 'hidden'
-            }}>
+            {/* Hidden File Input for Avatar Upload */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/png, image/jpeg, image/jpg, image/webp, image/gif"
+              onChange={handleAvatarFileChange}
+              style={{ display: 'none' }}
+            />
+
+            {/* Clickable Avatar Circle ("At the T letter") */}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onMouseEnter={() => setIsHoveringAvatar(true)}
+              onMouseLeave={() => setIsHoveringAvatar(false)}
+              title="Click here to upload your profile picture"
+              style={{
+                position: 'relative',
+                width: '46px',
+                height: '46px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)',
+                color: '#ffffff',
+                fontWeight: 800,
+                fontSize: '1.05rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '0.35rem',
+                boxShadow: '0 4px 12px rgba(2, 132, 199, 0.25)',
+                cursor: 'pointer',
+                border: '2px solid #ffffff',
+                outline: isHoveringAvatar ? '2px solid #0284c7' : '2px solid #bae6fd',
+                transition: 'all 0.2s ease',
+                transform: isHoveringAvatar ? 'scale(1.06)' : 'scale(1)'
+              }}
+            >
               {currentUser?.avatar && (currentUser.avatar.startsWith('data:image') || currentUser.avatar.includes('/') || currentUser.avatar.includes('http')) ? (
-                <img src={currentUser.avatar} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                <img
+                  src={currentUser.avatar}
+                  alt="Avatar"
+                  style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                />
               ) : (
-                (currentUser?.avatar || 'EM').slice(0, 2).toUpperCase()
+                (currentUser?.avatar || 'RS').slice(0, 2).toUpperCase()
+              )}
+
+              {/* Uploading Spinner */}
+              {isUploading ? (
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(15, 23, 42, 0.7)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Loader2 size={16} className="animate-spin" color="#ffffff" style={{ animation: 'spin 1s linear infinite' }} />
+                </div>
+              ) : (
+                /* Camera Icon on Hover */
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(2, 132, 199, 0.75)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: isHoveringAvatar ? 1 : 0,
+                  transition: 'opacity 0.15s ease',
+                  color: '#ffffff'
+                }}>
+                  <Camera size={18} strokeWidth={2.2} />
+                </div>
+              )}
+
+              {/* Camera Badge Overlay (visible when not hovering) */}
+              {!isHoveringAvatar && !isUploading && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '-2px',
+                  right: '-2px',
+                  width: '18px',
+                  height: '18px',
+                  borderRadius: '50%',
+                  background: '#0284c7',
+                  border: '1.5px solid #ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#ffffff',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                }}>
+                  <Camera size={10} strokeWidth={2.5} />
+                </div>
               )}
             </div>
 
-            <span style={{ fontSize: '0.825rem', fontWeight: 700, color: '#0f172a', display: 'block', lineHeight: 1.2 }}>
-              {currentUser?.name || 'Refiya Seyifadin'}
-            </span>
+            {/* Quick Helper Text */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: '0.1rem 0.35rem',
+                fontSize: '0.65rem',
+                color: '#0284c7',
+                fontWeight: 700,
+                cursor: 'pointer',
+                marginBottom: '0.35rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem'
+              }}
+            >
+              <Camera size={11} /> Upload Photo
+            </button>
 
-            <span style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '0.35rem' }}>
-              {currentUser?.email || 'rafiyaseyfedin@gmail.com'}
-            </span>
+            {/* User Info Links to Profile */}
+            <NavLink
+              to="/profile"
+              onClick={closeMobile}
+              style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}
+            >
+              <span style={{ fontSize: '0.825rem', fontWeight: 700, color: '#0f172a', display: 'block', lineHeight: 1.2 }}>
+                {currentUser?.name || 'Refiya Seyifadin'}
+              </span>
 
-            <span style={{
-              fontSize: '0.6rem',
-              fontWeight: 700,
-              padding: '0.1rem 0.45rem',
-              borderRadius: '4px',
-              background: '#fce7f3',
-              color: '#be185d'
-            }}>
-              {currentRole === 'ADMIN' ? 'Super Admin' : currentRole.replace('_', ' ')}
-            </span>
-          </NavLink>
+              <span style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 500, display: 'block', margin: '0.15rem 0 0.35rem' }}>
+                {currentUser?.email || 'rafiyaseyfedin@gmail.com'}
+              </span>
+
+              <span style={{
+                fontSize: '0.6rem',
+                fontWeight: 700,
+                padding: '0.1rem 0.45rem',
+                borderRadius: '4px',
+                background: '#fce7f3',
+                color: '#be185d'
+              }}>
+                {currentRole === 'ADMIN' ? 'Super Admin' : currentRole.replace('_', ' ')}
+              </span>
+            </NavLink>
+          </div>
         )}
 
       </div>

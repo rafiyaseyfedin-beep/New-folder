@@ -729,9 +729,14 @@ export default function Users() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginBottom: '0.65rem',
-                  boxShadow: '0 3px 8px rgba(2, 132, 199, 0.25)'
+                  boxShadow: '0 3px 8px rgba(2, 132, 199, 0.25)',
+                  overflow: 'hidden'
                 }}>
-                  {u.avatar || (u.name ? u.name.slice(0, 2).toUpperCase() : 'US')}
+                  {u.avatar && (u.avatar.startsWith('data:image') || u.avatar.includes('/') || u.avatar.includes('http')) ? (
+                    <img src={u.avatar} alt={u.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    u.avatar || (u.name ? u.name.slice(0, 2).toUpperCase() : 'US')
+                  )}
                 </div>
 
                 {/* Name & Email */}

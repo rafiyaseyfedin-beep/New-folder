@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../utils/supabase';
+import { processAvatarFile, getInitials } from '../utils/avatarHelper';
 import {
   User,
   Lock,
@@ -62,20 +63,41 @@ export default function Settings() {
     fetchAuthUser();
   }, []);
 
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatar(reader.result);
-      };
-      reader.readAsDataURL(file);
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const optimizedDataUrl = await processAvatarFile(file, 256, 0.85);
+      setAvatar(optimizedDataUrl);
+
+      // Instantly update context & localStorage
+      await updateUser(currentUser.id || 'u_active', {
+        name,
+        email,
+        phone,
+        team,
+        role,
+        avatar: optimizedDataUrl
+      });
+    } catch (err) {
+      console.error('Failed to process avatar in settings:', err);
+      setErrorMsg(err.message || 'Failed to process avatar image.');
     }
   };
 
-  const handleRemoveAvatar = () => {
-    const initials = name.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'EM';
+  const handleRemoveAvatar = async () => {
+    const initials = getInitials(name || currentUser?.name || 'EM');
     setAvatar(initials);
+
+    await updateUser(currentUser.id || 'u_active', {
+      name,
+      email,
+      phone,
+      team,
+      role,
+      avatar: initials
+    });
   };
 
   const handleSaveProfile = async (e) => {
@@ -85,7 +107,7 @@ export default function Settings() {
     setErrorMsg('');
 
     try {
-      // 1. Update public.users table via AppContext
+      // 1. Update public.users table and authenticatedUser via AppContext
       await updateUser(currentUser.id || 'u_active', {
         name,
         email,
@@ -95,25 +117,29 @@ export default function Settings() {
         avatar
       });
 
-      // 2. Update Supabase Auth user metadata
-      const { error: authErr } = await supabase.auth.updateUser({
-        email: email,
-        data: {
-          name: name,
-          role: role,
-          avatar: avatar
-        }
-      });
+      // 2. Safely sync to Supabase Auth user metadata
+      try {
+        const { error: authErr } = await supabase.auth.updateUser({
+          email: email,
+          data: {
+            name: name,
+            role: role,
+            avatar: avatar
+          }
+        });
 
-      if (authErr) {
-        console.warn('Auth user metadata update notice:', authErr.message);
+        if (authErr) {
+          console.warn('Auth user metadata update notice:', authErr.message);
+        }
+      } catch (authException) {
+        console.warn('Supabase Auth update skipped or unreachable:', authException);
       }
 
       setSaveSuccess('Profile settings updated successfully!');
       setTimeout(() => setSaveSuccess(''), 3000);
     } catch (err) {
-      console.error('Failed to sync profile updates to Supabase:', err);
-      setErrorMsg('Failed to save to Supabase: ' + err.message);
+      console.error('Failed to sync profile updates:', err);
+      setErrorMsg('Failed to update profile: ' + err.message);
     } finally {
       setLoading(false);
     }
